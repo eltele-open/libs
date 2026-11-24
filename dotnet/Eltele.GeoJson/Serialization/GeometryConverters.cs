@@ -48,25 +48,8 @@ public sealed class PointConverter : JsonConverter<Point>
             }
 
             var member = reader.GetString()!;
-            switch (member)
-            {
-                case GeoJsonMembers.CoordinatesMember:
-                    reader.Read();
-                    coordinates = GeoJsonReader.ReadPosition(ref reader);
-                    hasCoordinates = true;
-                    break;
-                case GeoJsonMembers.BboxMember:
-                    reader.Read();
-                    bbox = GeoJsonReader.ReadBoundingBox(ref reader);
-                    break;
-                case GeoJsonMembers.TypeMember:
-                    GeoJsonReader.ReadAndCheckType(ref reader, GeoJsonKind.Point);
-                    break;
-                default:
-                    reader.Read();
-                    (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
-                    break;
-            }
+            reader.Read();
+            (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
         }
 
         if (!hasCoordinates)
@@ -80,7 +63,7 @@ public sealed class PointConverter : JsonConverter<Point>
     internal static void WriteCore(Utf8JsonWriter writer, Point point)
     {
         writer.WriteStartObject();
-        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKinds.Name(GeoJsonKind.Point));
+        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKind.Point.Name);
         GeoJsonWriter.WriteBoundingBox(writer, point.Bbox);
         writer.WritePropertyName(GeoJsonMembers.CoordinatesText);
         GeoJsonWriter.WritePosition(writer, point.Coordinates);
@@ -130,25 +113,8 @@ public sealed class MultiPointConverter : JsonConverter<MultiPoint>
             }
 
             var member = reader.GetString()!;
-            switch (member)
-            {
-                case GeoJsonMembers.CoordinatesMember:
-                    reader.Read();
-                    coordinates = GeoJsonReader.ReadPositions(ref reader);
-                    hasCoordinates = true;
-                    break;
-                case GeoJsonMembers.BboxMember:
-                    reader.Read();
-                    bbox = GeoJsonReader.ReadBoundingBox(ref reader);
-                    break;
-                case GeoJsonMembers.TypeMember:
-                    GeoJsonReader.ReadAndCheckType(ref reader, GeoJsonKind.MultiPoint);
-                    break;
-                default:
-                    reader.Read();
-                    (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
-                    break;
-            }
+            reader.Read();
+            (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
         }
 
         return hasCoordinates
@@ -159,7 +125,7 @@ public sealed class MultiPointConverter : JsonConverter<MultiPoint>
     internal static void WriteCore(Utf8JsonWriter writer, MultiPoint multiPoint)
     {
         writer.WriteStartObject();
-        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKinds.Name(GeoJsonKind.MultiPoint));
+        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKind.MultiPoint.Name);
         GeoJsonWriter.WriteBoundingBox(writer, multiPoint.Bbox);
         writer.WritePropertyName(GeoJsonMembers.CoordinatesText);
         GeoJsonWriter.WritePositions(writer, multiPoint.Coordinates);
@@ -209,25 +175,8 @@ public sealed class LineStringConverter : JsonConverter<LineString>
             }
 
             var member = reader.GetString()!;
-            switch (member)
-            {
-                case GeoJsonMembers.CoordinatesMember:
-                    reader.Read();
-                    coordinates = GeoJsonReader.ReadPositions(ref reader);
-                    hasCoordinates = true;
-                    break;
-                case GeoJsonMembers.BboxMember:
-                    reader.Read();
-                    bbox = GeoJsonReader.ReadBoundingBox(ref reader);
-                    break;
-                case GeoJsonMembers.TypeMember:
-                    GeoJsonReader.ReadAndCheckType(ref reader, GeoJsonKind.LineString);
-                    break;
-                default:
-                    reader.Read();
-                    (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
-                    break;
-            }
+            reader.Read();
+            (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
         }
 
         return hasCoordinates
@@ -238,7 +187,7 @@ public sealed class LineStringConverter : JsonConverter<LineString>
     internal static void WriteCore(Utf8JsonWriter writer, LineString lineString)
     {
         writer.WriteStartObject();
-        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKinds.Name(GeoJsonKind.LineString));
+        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKind.LineString.Name);
         GeoJsonWriter.WriteBoundingBox(writer, lineString.Bbox);
         writer.WritePropertyName(GeoJsonMembers.CoordinatesText);
         GeoJsonWriter.WritePositions(writer, lineString.Coordinates);
@@ -288,25 +237,8 @@ public sealed class MultiLineStringConverter : JsonConverter<MultiLineString>
             }
 
             var member = reader.GetString()!;
-            switch (member)
-            {
-                case GeoJsonMembers.CoordinatesMember:
-                    reader.Read();
-                    coordinates = GeoJsonReader.ReadPositionArrays(ref reader);
-                    hasCoordinates = true;
-                    break;
-                case GeoJsonMembers.BboxMember:
-                    reader.Read();
-                    bbox = GeoJsonReader.ReadBoundingBox(ref reader);
-                    break;
-                case GeoJsonMembers.TypeMember:
-                    GeoJsonReader.ReadAndCheckType(ref reader, GeoJsonKind.MultiLineString);
-                    break;
-                default:
-                    reader.Read();
-                    (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
-                    break;
-            }
+            reader.Read();
+            (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
         }
 
         return hasCoordinates
@@ -317,7 +249,7 @@ public sealed class MultiLineStringConverter : JsonConverter<MultiLineString>
     internal static void WriteCore(Utf8JsonWriter writer, MultiLineString multiLineString)
     {
         writer.WriteStartObject();
-        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKinds.Name(GeoJsonKind.MultiLineString));
+        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKind.MultiLineString.Name);
         GeoJsonWriter.WriteBoundingBox(writer, multiLineString.Bbox);
         writer.WritePropertyName(GeoJsonMembers.CoordinatesText);
         writer.WriteStartArray();
@@ -373,25 +305,8 @@ public sealed class PolygonConverter : JsonConverter<Polygon>
             }
 
             var member = reader.GetString()!;
-            switch (member)
-            {
-                case GeoJsonMembers.CoordinatesMember:
-                    reader.Read();
-                    coordinates = GeoJsonReader.ReadLinearRings(ref reader);
-                    hasCoordinates = true;
-                    break;
-                case GeoJsonMembers.BboxMember:
-                    reader.Read();
-                    bbox = GeoJsonReader.ReadBoundingBox(ref reader);
-                    break;
-                case GeoJsonMembers.TypeMember:
-                    GeoJsonReader.ReadAndCheckType(ref reader, GeoJsonKind.Polygon);
-                    break;
-                default:
-                    reader.Read();
-                    (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
-                    break;
-            }
+            reader.Read();
+            (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
         }
 
         return hasCoordinates
@@ -402,7 +317,7 @@ public sealed class PolygonConverter : JsonConverter<Polygon>
     internal static void WriteCore(Utf8JsonWriter writer, Polygon polygon)
     {
         writer.WriteStartObject();
-        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKinds.Name(GeoJsonKind.Polygon));
+        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKind.Polygon.Name);
         GeoJsonWriter.WriteBoundingBox(writer, polygon.Bbox);
         writer.WritePropertyName(GeoJsonMembers.CoordinatesText);
         writer.WriteStartArray();
@@ -458,25 +373,8 @@ public sealed class MultiPolygonConverter : JsonConverter<MultiPolygon>
             }
 
             var member = reader.GetString()!;
-            switch (member)
-            {
-                case GeoJsonMembers.CoordinatesMember:
-                    reader.Read();
-                    coordinates = GeoJsonReader.ReadLinearRingArrays(ref reader);
-                    hasCoordinates = true;
-                    break;
-                case GeoJsonMembers.BboxMember:
-                    reader.Read();
-                    bbox = GeoJsonReader.ReadBoundingBox(ref reader);
-                    break;
-                case GeoJsonMembers.TypeMember:
-                    GeoJsonReader.ReadAndCheckType(ref reader, GeoJsonKind.MultiPolygon);
-                    break;
-                default:
-                    reader.Read();
-                    (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
-                    break;
-            }
+            reader.Read();
+            (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
         }
 
         return hasCoordinates
@@ -487,7 +385,7 @@ public sealed class MultiPolygonConverter : JsonConverter<MultiPolygon>
     internal static void WriteCore(Utf8JsonWriter writer, MultiPolygon multiPolygon)
     {
         writer.WriteStartObject();
-        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKinds.Name(GeoJsonKind.MultiPolygon));
+        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKind.MultiPolygon.Name);
         GeoJsonWriter.WriteBoundingBox(writer, multiPolygon.Bbox);
         writer.WritePropertyName(GeoJsonMembers.CoordinatesText);
         writer.WriteStartArray();
@@ -547,24 +445,8 @@ public sealed class GeometryCollectionConverter : JsonConverter<GeometryCollecti
             }
 
             var member = reader.GetString()!;
-            switch (member)
-            {
-                case GeoJsonMembers.GeometriesMember:
-                    reader.Read();
-                    geometries = ReadGeometries(ref reader);
-                    break;
-                case GeoJsonMembers.BboxMember:
-                    reader.Read();
-                    bbox = GeoJsonReader.ReadBoundingBox(ref reader);
-                    break;
-                case GeoJsonMembers.TypeMember:
-                    GeoJsonReader.ReadAndCheckType(ref reader, GeoJsonKind.GeometryCollection);
-                    break;
-                default:
-                    reader.Read();
-                    (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
-                    break;
-            }
+            reader.Read();
+            (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
         }
 
         return new GeometryCollection { Geometries = geometries, Bbox = bbox, ForeignMembers = foreignMembers };
@@ -573,7 +455,7 @@ public sealed class GeometryCollectionConverter : JsonConverter<GeometryCollecti
     internal static void WriteCore(Utf8JsonWriter writer, GeometryCollection collection)
     {
         writer.WriteStartObject();
-        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKinds.Name(GeoJsonKind.GeometryCollection));
+        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKind.GeometryCollection.Name);
         GeoJsonWriter.WriteBoundingBox(writer, collection.Bbox);
         writer.WritePropertyName(GeoJsonMembers.GeometriesText);
         writer.WriteStartArray();
@@ -614,14 +496,15 @@ public sealed class GeometryConverter : JsonConverter<Geometry>
 
     internal static Geometry ReadCore(ref Utf8JsonReader reader) => GeoJsonReader.ReadKind(ref reader) switch
     {
-        GeoJsonKind.Point => new Geometry(PointConverter.ReadCore(ref reader)),
-        GeoJsonKind.MultiPoint => new Geometry(MultiPointConverter.ReadCore(ref reader)),
-        GeoJsonKind.LineString => new Geometry(LineStringConverter.ReadCore(ref reader)),
-        GeoJsonKind.MultiLineString => new Geometry(MultiLineStringConverter.ReadCore(ref reader)),
-        GeoJsonKind.Polygon => new Geometry(PolygonConverter.ReadCore(ref reader)),
-        GeoJsonKind.MultiPolygon => new Geometry(MultiPolygonConverter.ReadCore(ref reader)),
-        GeoJsonKind.GeometryCollection => new Geometry(GeometryCollectionConverter.ReadCore(ref reader)),
-        _ => throw new JsonException("A Geometry must have one of the seven geometry types (RFC 7946 §3.1)."),
+        PointKind => new Geometry(PointConverter.ReadCore(ref reader)),
+        MultiPointKind => new Geometry(MultiPointConverter.ReadCore(ref reader)),
+        LineStringKind => new Geometry(LineStringConverter.ReadCore(ref reader)),
+        MultiLineStringKind => new Geometry(MultiLineStringConverter.ReadCore(ref reader)),
+        PolygonKind => new Geometry(PolygonConverter.ReadCore(ref reader)),
+        MultiPolygonKind => new Geometry(MultiPolygonConverter.ReadCore(ref reader)),
+        GeometryCollectionKind => new Geometry(GeometryCollectionConverter.ReadCore(ref reader)),
+        FeatureKind or FeatureCollectionKind => throw new JsonException(
+            "A Geometry must have one of the seven geometry types (RFC 7946 §3.1)."),
     };
 
     internal static void WriteCore(Utf8JsonWriter writer, Geometry geometry)

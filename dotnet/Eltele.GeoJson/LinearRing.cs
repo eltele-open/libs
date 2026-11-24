@@ -17,11 +17,9 @@ public readonly struct LinearRing : IEquatable<LinearRing>
     public LinearRing(ImmutableArray<Position> positions) =>
         _positions = positions.IsDefault ? ImmutableArray<Position>.Empty : positions;
 
-    public LinearRing(params Position[] positions) => _positions = ImmutableArray.Create(positions);
-
     public ImmutableArray<Position> Positions => _positions.IsDefault ? ImmutableArray<Position>.Empty : _positions;
 
-    public static implicit operator LinearRing(Position[] positions) => new(positions);
+    public static implicit operator LinearRing(Position[] positions) => new(ImmutableArray.Create(positions));
 
     public static implicit operator LinearRing(ImmutableArray<Position> positions) => new(positions);
 

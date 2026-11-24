@@ -46,16 +46,10 @@ internal static class GeoJsonReader
             throw new JsonException("The \"type\" member of a GeoJSON object must be a string (RFC 7946 §3).");
         }
 
-        if (GeoJsonKinds.Matches(ref reader, expected))
-        {
-            return;
-        }
-
-        var text = reader.GetString();
-        if (!string.Equals(text, GeoJsonKinds.Name(expected), StringComparison.Ordinal))
+        if (!reader.ValueTextEquals(expected.Utf8Name))
         {
             throw new JsonException(
-                $"A {GeoJsonKinds.Name(expected)} was expected here, but the \"type\" member is \"{text}\" (RFC 7946 §3).");
+                $"A {expected.Name} was expected here, but the \"type\" member is \"{reader.GetString()}\" (RFC 7946 §3).");
         }
     }
 
@@ -195,23 +189,14 @@ internal static class GeoJsonReader
             throw new JsonException("The \"type\" member of a GeoJSON object must be a string (RFC 7946 §3).");
         }
 
-        foreach (var kind in GeoJsonKinds.All)
+        foreach (var kind in GeoJsonKind.All)
         {
-            if (GeoJsonKinds.Matches(ref reader, kind))
+            if (reader.ValueTextEquals(kind.Utf8Name))
             {
                 return kind;
             }
         }
 
-        var text = reader.GetString();
-        foreach (var kind in GeoJsonKinds.All)
-        {
-            if (string.Equals(text, GeoJsonKinds.Name(kind), StringComparison.Ordinal))
-            {
-                return kind;
-            }
-        }
-
-        throw new JsonException($"\"{text}\" is not one of the nine GeoJSON types (RFC 7946 §1.4).");
+        throw new JsonException($"\"{reader.GetString()}\" is not one of the nine GeoJSON types (RFC 7946 §1.4).");
     }
 }

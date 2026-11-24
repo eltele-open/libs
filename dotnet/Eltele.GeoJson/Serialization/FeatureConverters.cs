@@ -62,31 +62,8 @@ public sealed class FeatureConverter<TProperties> : JsonConverter<Feature<TPrope
             }
 
             var member = reader.GetString()!;
-            switch (member)
-            {
-                case GeoJsonMembers.IdMember:
-                    reader.Read();
-                    id = ReadId(ref reader);
-                    break;
-                case GeoJsonMembers.GeometryMember:
-                    reader.Read();
-                    geometry = ReadGeometry(ref reader);
-                    break;
-                case GeoJsonMembers.PropertiesMember:
-                    properties = ReadProperties(ref reader, options);
-                    break;
-                case GeoJsonMembers.BboxMember:
-                    reader.Read();
-                    bbox = GeoJsonReader.ReadBoundingBox(ref reader);
-                    break;
-                case GeoJsonMembers.TypeMember:
-                    GeoJsonReader.ReadAndCheckType(ref reader, GeoJsonKind.Feature);
-                    break;
-                default:
-                    reader.Read();
-                    (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
-                    break;
-            }
+            reader.Read();
+            (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
         }
 
         return new Feature<TProperties>
@@ -105,7 +82,7 @@ public sealed class FeatureConverter<TProperties> : JsonConverter<Feature<TPrope
         JsonSerializerOptions options)
     {
         writer.WriteStartObject();
-        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKinds.Name(GeoJsonKind.Feature));
+        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKind.Feature.Name);
         GeoJsonWriter.WriteBoundingBox(writer, feature.Bbox);
 
         if (feature.Id is { } id && id.Value is not null)
@@ -213,24 +190,8 @@ public sealed class FeatureCollectionConverter<TProperties> : JsonConverter<Feat
             }
 
             var member = reader.GetString()!;
-            switch (member)
-            {
-                case GeoJsonMembers.FeaturesMember:
-                    reader.Read();
-                    features = ReadFeatures(ref reader, options);
-                    break;
-                case GeoJsonMembers.BboxMember:
-                    reader.Read();
-                    bbox = GeoJsonReader.ReadBoundingBox(ref reader);
-                    break;
-                case GeoJsonMembers.TypeMember:
-                    GeoJsonReader.ReadAndCheckType(ref reader, GeoJsonKind.FeatureCollection);
-                    break;
-                default:
-                    reader.Read();
-                    (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
-                    break;
-            }
+            reader.Read();
+            (foreignMembers ??= new JsonObject())[member] = GeoJsonReader.ReadValue(ref reader);
         }
 
         return new FeatureCollection<TProperties>
@@ -247,7 +208,7 @@ public sealed class FeatureCollectionConverter<TProperties> : JsonConverter<Feat
         JsonSerializerOptions options)
     {
         writer.WriteStartObject();
-        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKinds.Name(GeoJsonKind.FeatureCollection));
+        writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKind.FeatureCollection.Name);
         GeoJsonWriter.WriteBoundingBox(writer, collection.Bbox);
         writer.WritePropertyName(GeoJsonMembers.FeaturesText);
         writer.WriteStartArray();
@@ -291,17 +252,16 @@ public sealed class GeoJsonObjectConverter : JsonConverter<GeoJsonObject>
     internal static GeoJsonObject ReadCore(ref Utf8JsonReader reader, JsonSerializerOptions options) =>
         GeoJsonReader.ReadKind(ref reader) switch
         {
-            GeoJsonKind.Feature => new GeoJsonObject(FeatureConverter<JsonNode>.ReadCore(ref reader, options)),
-            GeoJsonKind.FeatureCollection => new GeoJsonObject(
+            FeatureKind => new GeoJsonObject(FeatureConverter<JsonNode>.ReadCore(ref reader, options)),
+            FeatureCollectionKind => new GeoJsonObject(
                 FeatureCollectionConverter<JsonNode>.ReadCore(ref reader, options)),
-            GeoJsonKind.Point
-                or GeoJsonKind.MultiPoint
-                or GeoJsonKind.LineString
-                or GeoJsonKind.MultiLineString
-                or GeoJsonKind.Polygon
-                or GeoJsonKind.MultiPolygon
-                or GeoJsonKind.GeometryCollection => new GeoJsonObject(GeometryConverter.ReadCore(ref reader)),
-            _ => throw new JsonException("A GeoJSON object is a Geometry, a Feature, or a FeatureCollection (RFC 7946 §3)."),
+            PointKind
+                or MultiPointKind
+                or LineStringKind
+                or MultiLineStringKind
+                or PolygonKind
+                or MultiPolygonKind
+                or GeometryCollectionKind => new GeoJsonObject(GeometryConverter.ReadCore(ref reader)),
         };
 
     internal static void WriteCore(Utf8JsonWriter writer, GeoJsonObject value, JsonSerializerOptions options)
@@ -331,18 +291,17 @@ public sealed class GeoJsonObjectConverter<TProperties> : JsonConverter<GeoJsonO
         Type typeToConvert,
         JsonSerializerOptions options) => GeoJsonReader.ReadKind(ref reader) switch
     {
-        GeoJsonKind.Feature => new GeoJsonObject<TProperties>(
+        FeatureKind => new GeoJsonObject<TProperties>(
             FeatureConverter<TProperties>.ReadCore(ref reader, options)),
-        GeoJsonKind.FeatureCollection => new GeoJsonObject<TProperties>(
+        FeatureCollectionKind => new GeoJsonObject<TProperties>(
             FeatureCollectionConverter<TProperties>.ReadCore(ref reader, options)),
-        GeoJsonKind.Point
-            or GeoJsonKind.MultiPoint
-            or GeoJsonKind.LineString
-            or GeoJsonKind.MultiLineString
-            or GeoJsonKind.Polygon
-            or GeoJsonKind.MultiPolygon
-            or GeoJsonKind.GeometryCollection => new GeoJsonObject<TProperties>(GeometryConverter.ReadCore(ref reader)),
-        _ => throw new JsonException("A GeoJSON object is a Geometry, a Feature, or a FeatureCollection (RFC 7946 §3)."),
+        PointKind
+            or MultiPointKind
+            or LineStringKind
+            or MultiLineStringKind
+            or PolygonKind
+            or MultiPolygonKind
+            or GeometryCollectionKind => new GeoJsonObject<TProperties>(GeometryConverter.ReadCore(ref reader)),
     };
 
     public override void Write(
