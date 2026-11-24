@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Eltele.GeoJson.Tests/Eltele.GeoJson.Tests.csproj" />
+  <Project Path="Eltele.GeoJson/Eltele.GeoJson.csproj" />
+</Solution>
