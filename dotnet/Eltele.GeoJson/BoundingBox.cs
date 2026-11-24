@@ -13,10 +13,8 @@ public readonly struct BoundingBox : IEquatable<BoundingBox>
 {
     private readonly ImmutableArray<double> _values;
 
-    public BoundingBox(ImmutableArray<double> values) =>
+    public BoundingBox(params ImmutableArray<double> values) =>
         _values = values.IsDefault ? ImmutableArray<double>.Empty : values;
-
-    public BoundingBox(params double[] values) => _values = ImmutableArray.Create(values);
 
     public ImmutableArray<double> Values => _values.IsDefault ? ImmutableArray<double>.Empty : _values;
 
@@ -24,7 +22,7 @@ public readonly struct BoundingBox : IEquatable<BoundingBox>
 
     public int Dimensions => Values.Length / 2;
 
-    public static implicit operator BoundingBox(double[] values) => new(values);
+    public static implicit operator BoundingBox(double[] values) => new(ImmutableArray.Create(values));
 
     public bool Equals(BoundingBox other) => Values.AsSpan().SequenceEqual(other.Values.AsSpan());
 

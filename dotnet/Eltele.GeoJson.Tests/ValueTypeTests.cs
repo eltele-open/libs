@@ -72,13 +72,36 @@ public sealed class ValueTypeTests
     {
         Position[] positions = [new(0, 0), new(1, 0), new(1, 1), new(0, 0)];
         LinearRing fromArray = positions;
-        LinearRing fromImmutable = ImmutableArray.Create(positions);
+        var fromImmutable = new LinearRing(ImmutableArray.Create(positions));
 
         Assert.AreEqual(fromArray, fromImmutable);
         Assert.IsTrue(fromArray == fromImmutable);
         Assert.AreEqual(fromArray.GetHashCode(), fromImmutable.GetHashCode());
         Assert.IsTrue(fromArray != new LinearRing([new Position(0, 0)]));
         Assert.IsTrue(default(LinearRing).Positions.IsEmpty);
+    }
+
+    [TestMethod]
+    public void BuildsARingFromVarargsACollectionOrAnImmutableArray()
+    {
+        var fromVarargs = new LinearRing(new Position(0, 0), new Position(1, 0), new Position(0, 0));
+        var fromCollection = new LinearRing([new Position(0, 0), new Position(1, 0), new Position(0, 0)]);
+        var fromImmutableArray = new LinearRing(
+            ImmutableArray.Create(new Position(0, 0), new Position(1, 0), new Position(0, 0)));
+
+        Assert.AreEqual(fromVarargs, fromCollection);
+        Assert.AreEqual(fromVarargs, fromImmutableArray);
+    }
+
+    [TestMethod]
+    public void BuildsABoundingBoxFromVarargsACollectionOrAnImmutableArray()
+    {
+        var fromVarargs = new BoundingBox(1, 2, 3, 4);
+        var fromCollection = new BoundingBox([1.0, 2.0, 3.0, 4.0]);
+        var fromImmutableArray = new BoundingBox(ImmutableArray.Create(1.0, 2.0, 3.0, 4.0));
+
+        Assert.AreEqual(fromVarargs, fromCollection);
+        Assert.AreEqual(fromVarargs, fromImmutableArray);
     }
 
     [TestMethod]

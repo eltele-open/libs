@@ -14,14 +14,12 @@ public readonly struct LinearRing : IEquatable<LinearRing>
 {
     private readonly ImmutableArray<Position> _positions;
 
-    public LinearRing(ImmutableArray<Position> positions) =>
+    public LinearRing(params ImmutableArray<Position> positions) =>
         _positions = positions.IsDefault ? ImmutableArray<Position>.Empty : positions;
 
     public ImmutableArray<Position> Positions => _positions.IsDefault ? ImmutableArray<Position>.Empty : _positions;
 
     public static implicit operator LinearRing(Position[] positions) => new(ImmutableArray.Create(positions));
-
-    public static implicit operator LinearRing(ImmutableArray<Position> positions) => new(positions);
 
     public bool Equals(LinearRing other) => Positions.AsSpan().SequenceEqual(other.Positions.AsSpan());
 
