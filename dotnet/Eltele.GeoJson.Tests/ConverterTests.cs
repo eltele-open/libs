@@ -83,13 +83,19 @@ public sealed class ConverterTests
     }
 
     [TestMethod]
-    public void RoundTripsATypedGeometryDocument()
+    [DataRow("""{"type":"Point","coordinates":[1.0,2.0]}""")]
+    [DataRow("""{"type":"MultiPoint","coordinates":[[1.0,2.0]]}""")]
+    [DataRow("""{"type":"LineString","coordinates":[[1.0,2.0],[3.0,4.0]]}""")]
+    [DataRow("""{"type":"MultiLineString","coordinates":[[[1.0,2.0],[3.0,4.0]]]}""")]
+    [DataRow("""{"type":"Polygon","coordinates":[[[0.0,0.0],[1.0,0.0],[1.0,1.0],[0.0,0.0]]]}""")]
+    [DataRow("""{"type":"MultiPolygon","coordinates":[[[[0.0,0.0],[1.0,0.0],[1.0,1.0],[0.0,0.0]]]]}""")]
+    [DataRow("""{"type":"GeometryCollection","geometries":[]}""")]
+    public void RoundTripsEveryGeometryThroughATypedDocument(string json)
     {
-        var document = JsonSerializer.Deserialize<GeoJsonObject<CityProperties>>(
-            """{"type":"Point","coordinates":[1.0,2.0]}""")!;
+        var document = JsonSerializer.Deserialize<GeoJsonObject<CityProperties>>(json)!;
 
         Assert.IsInstanceOfType<Geometry>(document.Value);
-        Json.AssertEqual("""{"type":"Point","coordinates":[1.0,2.0]}""", JsonSerializer.Serialize(document));
+        Json.AssertEqual(json, JsonSerializer.Serialize(document));
     }
 
     [TestMethod]
