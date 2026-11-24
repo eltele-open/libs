@@ -1,0 +1,49 @@
+name: pr-verify
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-verify-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dotnet
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 11.0.x
+
+      - name: Restore
+        run: dotnet restore GeoJson.slnx
+
+      - name: Test
+        run: >
+          dotnet test GeoJson.slnx
+          --no-restore
+          --configuration Release
+          --coverage
+          --coverage-output coverage.cobertura.xml
+          --coverage-output-format cobertura
+          --results-directory artifacts/test-results
+          --report-gh
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: dotnet/artifacts/test-results/coverage.cobertura.xml
+          if-no-files-found: warn

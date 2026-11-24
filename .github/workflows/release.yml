@@ -1,0 +1,58 @@
+name: release
+
+on:
+  push:
+    tags: ["[0-9]*.[0-9]*.[0-9]*"]
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  VERSION: ${{ github.ref_name }}
+  PACKAGE_SOURCE: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dotnet
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 11.0.x
+
+      - name: Check the tag is a release version
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "tag '$VERSION' is not x.y.z"
+            exit 1
+          fi
+
+      - name: Restore
+        run: dotnet restore GeoJson.slnx
+
+      - name: Test
+        run: dotnet test GeoJson.slnx --no-restore --configuration Release
+
+      - name: Pack
+        run: >
+          dotnet pack Eltele.GeoJson/Eltele.GeoJson.csproj
+          --no-restore
+          --configuration Release
+          --output artifacts
+          -p:Version="$VERSION"
+
+      - name: Publish to GitHub Packages
+        env:
+          NUGET_API_KEY: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          dotnet nuget push "artifacts/*.nupkg"
+          --source "$PACKAGE_SOURCE"
+          --api-key "$NUGET_API_KEY"
+          --skip-duplicate
