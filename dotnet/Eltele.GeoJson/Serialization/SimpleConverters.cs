@@ -40,7 +40,6 @@ public sealed class FeatureIdConverter : JsonConverter<FeatureId>
 
     internal static FeatureId ReadCore(ref Utf8JsonReader reader)
     {
-        reader.Read();
         return reader.TokenType switch
         {
             JsonTokenType.String => new FeatureId(reader.GetString()!),

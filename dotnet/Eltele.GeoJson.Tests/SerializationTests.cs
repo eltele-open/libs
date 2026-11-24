@@ -135,6 +135,37 @@ public sealed class SerializationTests
     }
 
     [TestMethod]
+    public void ReadsAFeatureIdThatIsJsonNullAsAbsent()
+    {
+        var feature = JsonSerializer.Deserialize<Feature<JsonNode>>(
+            """{"type":"Feature","id":null,"geometry":null,"properties":null}""")!;
+
+        Assert.IsNull(feature.Id);
+    }
+
+    [TestMethod]
+    public void RoundTripsANumericFeatureId()
+    {
+        var feature = new Feature<JsonNode> { Id = new FeatureId(42) };
+
+        Json.AssertEqual(
+            """{"type":"Feature","id":42,"geometry":null,"properties":null}""",
+            JsonSerializer.Serialize(feature));
+        Assert.AreEqual(new FeatureId(42), JsonSerializer.Deserialize<Feature<JsonNode>>(
+            """{"type":"Feature","id":42,"geometry":null,"properties":null}""")!.Id);
+    }
+
+    [TestMethod]
+    public void OmitsAFeatureIdThatHoldsNoValue()
+    {
+        var feature = new Feature<JsonNode> { Id = default(FeatureId) };
+
+        Assert.AreEqual(
+            """{"type":"Feature","geometry":null,"properties":null}""",
+            JsonSerializer.Serialize(feature));
+    }
+
+    [TestMethod]
     public void ReadsAnEmptyFeatureCollection()
     {
         var collection = JsonSerializer.Deserialize<FeatureCollection<JsonNode>>(

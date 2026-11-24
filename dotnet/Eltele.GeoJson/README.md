@@ -63,7 +63,8 @@ built on demand from a static table, and a document that validates appends nothi
 allocate.
 
 The one rule a document cannot carry is a buffer of `coordinates` with fewer than two ordinates (§3.1.1): there is
-no `Position` to build, so reading throws instead of reporting.
+no `Position` to build, so reading throws instead of reporting. An `id` that is neither a string nor a number
+(§3.2) has no `FeatureId` either, and throws for the same reason; a JSON null `id` reads as absent.
 
 ### Severity
 

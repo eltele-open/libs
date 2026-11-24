@@ -30,7 +30,8 @@ public sealed class FeatureConverter<TProperties> : JsonConverter<Feature<TPrope
         {
             if (reader.ValueTextEquals(GeoJsonMembers.Id))
             {
-                id = FeatureIdConverter.ReadCore(ref reader);
+                reader.Read();
+                id = ReadId(ref reader);
                 continue;
             }
 
@@ -64,7 +65,8 @@ public sealed class FeatureConverter<TProperties> : JsonConverter<Feature<TPrope
             switch (member)
             {
                 case GeoJsonMembers.IdMember:
-                    id = FeatureIdConverter.ReadCore(ref reader);
+                    reader.Read();
+                    id = ReadId(ref reader);
                     break;
                 case GeoJsonMembers.GeometryMember:
                     reader.Read();
@@ -106,7 +108,7 @@ public sealed class FeatureConverter<TProperties> : JsonConverter<Feature<TPrope
         writer.WriteString(GeoJsonMembers.TypeText, GeoJsonKinds.Name(GeoJsonKind.Feature));
         GeoJsonWriter.WriteBoundingBox(writer, feature.Bbox);
 
-        if (feature.Id is { } id)
+        if (feature.Id is { } id && id.Value is not null)
         {
             writer.WritePropertyName(GeoJsonMembers.IdText);
             FeatureIdConverter.WriteCore(writer, id);
@@ -134,6 +136,18 @@ public sealed class FeatureConverter<TProperties> : JsonConverter<Feature<TPrope
 
         GeoJsonWriter.WriteForeignMembers(writer, feature.ForeignMembers);
         writer.WriteEndObject();
+    }
+
+    // A conditional would take the union's struct as its natural type here and turn null into default(FeatureId),
+    // which is a value without a case rather than an absent id.
+    private static FeatureId? ReadId(ref Utf8JsonReader reader)
+    {
+        if (reader.TokenType == JsonTokenType.Null)
+        {
+            return null;
+        }
+
+        return FeatureIdConverter.ReadCore(ref reader);
     }
 
     private static Geometry? ReadGeometry(ref Utf8JsonReader reader)
