@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Text.Json.Nodes;
 using Eltele.GeoJson.Validation;
 
@@ -15,6 +16,16 @@ public sealed class ValidatorTests
             Assert.IsFalse(string.IsNullOrWhiteSpace(ValidationRules.Message(rule, null)), rule.ToString());
             Assert.IsTrue(Enum.IsDefined(ValidationRules.Severity(rule)), rule.ToString());
         }
+    }
+
+    [TestMethod]
+    public void RejectsARuleThatIsNotDefined()
+    {
+        var rule = (ValidationRule)999;
+
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => ValidationRules.Severity(rule));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => ValidationRules.Section(rule));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => ValidationRules.Message(rule, null));
     }
 
     [TestMethod]
@@ -52,6 +63,25 @@ public sealed class ValidatorTests
 
         AssertRule(Validate(errors => LinearRingValidator.FindViolations(ring, RingKind.Exterior, errors)),
             ValidationRule.LinearRingIsNotClosed);
+    }
+
+    [TestMethod]
+    public void ReportsARingThatCrossesTheAntimeridian()
+    {
+        var ring = Ring((170, 0), (-170, 0), (-170, 10), (170, 10), (170, 0));
+
+        AssertRule(Validate(errors => LinearRingValidator.FindViolations(ring, RingKind.Exterior, errors)),
+            ValidationRule.GeometryCrossesTheAntimeridian);
+    }
+
+    [TestMethod]
+    public void AcceptsARingTooShortToHaveAWinding()
+    {
+        var ring = Ring((0, 0), (0, 0));
+
+        var errors = Validate(errors => LinearRingValidator.FindViolations(ring, RingKind.Exterior, errors));
+
+        Assert.IsFalse(errors.Any(error => error.Rule == ValidationRule.ExteriorRingIsClockwise));
     }
 
     [TestMethod]
@@ -289,5 +319,5 @@ public sealed class ValidatorTests
             $"Expected {rule}, but found [{string.Join(", ", errors.Select(error => error.Rule))}]");
 
     private static LinearRing Ring(params (double Longitude, double Latitude)[] positions) =>
-        new(positions.Select(position => new Position(position.Longitude, position.Latitude)).ToArray());
+        new(positions.Select(position => new Position(position.Longitude, position.Latitude)).ToImmutableArray());
 }

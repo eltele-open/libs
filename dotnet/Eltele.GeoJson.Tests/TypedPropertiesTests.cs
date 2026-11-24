@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Eltele.GeoJson.Validation;
 
 namespace Eltele.GeoJson.Tests;
 
@@ -72,6 +73,57 @@ public sealed class TypedPropertiesTests
             """{"type":"Feature","geometry":null,"properties":null}""")!;
 
         Assert.IsNull(feature.Properties);
+    }
+
+    [TestMethod]
+    public void WritesATypedFeatureCollectionDocument()
+    {
+        var document = new GeoJsonObject<CityProperties>(
+            new FeatureCollection<CityProperties>
+            {
+                Features = [new Feature<CityProperties> { Properties = new CityProperties("Oslo", 700_000) }],
+            });
+
+        var json = JsonSerializer.Serialize(document);
+
+        StringAssert.Contains(json, "\"type\":\"FeatureCollection\"");
+        Json.AssertEqual(json, JsonSerializer.Serialize(JsonSerializer.Deserialize<GeoJsonObject<CityProperties>>(json)));
+    }
+
+    [TestMethod]
+    public void WritesATypedGeometryDocument()
+    {
+        var document = new GeoJsonObject<CityProperties>(
+            new Geometry(new Point { Coordinates = new Position(10.7522, 59.9139) }));
+
+        Json.AssertEqual(
+            """{"type":"Point","coordinates":[10.7522,59.9139]}""",
+            JsonSerializer.Serialize(document));
+    }
+
+    [TestMethod]
+    public void ValidatesATypedDocument()
+    {
+        var valid = new GeoJsonObject<CityProperties>(
+            new Feature<CityProperties>
+            {
+                Geometry = new Point { Coordinates = new Position(10.7522, 59.9139) },
+                Properties = new CityProperties("Oslo", 700_000),
+            });
+        var invalid = new GeoJsonObject<CityProperties>(
+            new Feature<CityProperties>
+            {
+                Geometry = new LineString { Coordinates = [new Position(10.7522, 59.9139)] },
+            });
+
+        Assert.IsTrue(GeoJsonValidator.IsValid(valid));
+
+        var errors = new List<ValidationError>();
+        GeoJsonValidator.FindViolations(invalid, errors);
+        Assert.IsTrue(errors.Any(error => error.Rule == ValidationRule.LineStringHasFewerThanTwoPositions));
+
+        Assert.ThrowsExactly<GeoJsonValidationException>(() => GeoJsonValidator.ThrowIfInvalid(invalid));
+        GeoJsonValidator.ThrowIfInvalid(valid);
     }
 
     [TestMethod]
